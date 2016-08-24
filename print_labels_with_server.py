@@ -206,7 +206,16 @@ def bufferString(bufferChar = '', string = '', length = 0, postBuffer = False):
         return u'{}{}'.format(string, bufferChar * (length-strLen))
     return u'{}{}'.format(bufferChar * (length-strLen), str(string))
 
+def fix_codecs(s):
+    if isinstance(s, unicode):
+        return s.encode('utf-8')
+    else:
+        try:
+            return s.decode('gbk').encode('utf-8')
+        except:
+            return s
 
+API_ROOT = u'http://192.168.1.123:8/api'
 
 '''CMD Interface for working with 桶裝出貨表 data when running this module
 independently.
@@ -214,23 +223,21 @@ independently.
 def printapp(noprint=False):
 
     # Get list of company names and get user selection.
-    response = urllib2.urlopen(
-        'http://192.168.1.123:8/api/barrelShipment/companies'
-    )
+    response = urllib2.urlopen(API_ROOT + u'/barrelShipment/companies')
     companyNames = json.loads(response.read())
 
     for i, co in enumerate(companyNames):
-        print '{})'.format(i+1),
-        print spacedString(co, 6)
+        print '{})'.format(i+1), co
 
     companyIndex = input("Select row number:")-1
-    company = companyNames[companyIndex]
+    company = urllib2.quote(fix_codecs(companyNames[companyIndex]))
 
     # Get recent shipments and get user selection
-    response = urllib2.urlopen(
-        'http://192.168.1.123:8/api/barrelShipment/latest/'+company+'/30'
-    )
+    REQ_URL = API_ROOT + '/barrelShipment/latest/{}/30'.format(company)
+    response = urllib2.urlopen(REQ_URL)
     shipmentArray = json.loads(response.read())
+    if type(shipmentArray) != list:
+        print "ERROR:", shipmentArray
 
     for i in range(len(shipmentArray))[::-1]:
         sh = shipmentArray[i]
