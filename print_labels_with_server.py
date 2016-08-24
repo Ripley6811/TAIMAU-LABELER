@@ -239,7 +239,7 @@ def printapp(noprint=False):
     if type(shipmentArray) != list:
         print "ERROR:", shipmentArray
 
-    for i in range(len(shipmentArray))[::-1]:
+    for i in range(len(shipmentArray)):
         sh = shipmentArray[i]
         print '{})'.format(i+1),
         print spacedString('{0}/{1}'.format(sh['shipMonth']+1,sh['shipDate']), 5),
@@ -280,17 +280,25 @@ def printapp(noprint=False):
 
     # Give opportunity to print again with a while loop.
     while True:
-        print "Set max number to print (BLANK will EXIT)."
-        nPrint = raw_input("Stop at #")
+        print "Set start and end. BLANK will print ALL!"
+        print "All: {0} - {1}".format(doc[u"start"],doc[u"start"] + doc[u"count"] - 1)
+        nStart = raw_input("Start printing at #")
+        try:
+            nStart = int(nStart)
+        except:
+            nStart = 0
+
+        nPrint = raw_input("Last printing at #")
         try:
             nPrint = int(nPrint)
         except:
-            print "Not a valid number... Exiting."
-            break
+            nPrint = 100000
 
         # Loop through and print each label.
         for i in range(int(doc[u"count"])):
-            if i >= nPrint:
+            if doc[u"start"] + i < nStart:
+                continue
+            if doc[u"start"] + i > nPrint:
                 break
             ASE_NO = "{0}{1:04}".format(doc[u"lotID"],doc[u"start"] + i)
             print "---------------------"
@@ -304,16 +312,16 @@ def printapp(noprint=False):
             print "QTY:", doc[u"pkgQty"]
             print "EXP:", ExpDate
             print "DOM:", DOM
-            print "RT:", doc[u"rtCode"] if u'rtSeq' in doc else u'NA'
+            print "RT:", doc[u"rtCode"] if u'rtCode' in doc else u'NA'
             print "PO:", doc[u"orderID"]
             print "---------------------"
             if not noprint:
                 if doc['barcode']:
                     TM_label(doc[u"product"], doc[u"pn"] if u'pn' in doc else u'', doc[u"lotID"], ASE_NO,
-                             doc[u"pkgQty"], ExpDate, DOM, doc[u"rtCode"] if u'rtSeq' in doc else u'', doc[u"orderID"])
+                             doc[u"pkgQty"], ExpDate, DOM, doc[u"rtCode"] if u'rtCode' in doc else u'', doc[u"orderID"])
                 if doc['datamatrix']:
                     TM_DMlabel(doc[u"product"], doc[u"pn"] if u'pn' in doc else u'', doc[u"lotID"], ASE_NO,
-                             doc[u"pkgQty"], ExpDate, DOM, doc[u"rtCode"] if u'rtSeq' in doc else u'')
+                             doc[u"pkgQty"], ExpDate, DOM, doc[u"rtCode"] if u'rtCode' in doc else u'')
         if noprint:
             raw_input("Finished. Press enter to close")
     raw_input("Hit enter to close")
