@@ -195,16 +195,16 @@ def TM_QRlabel(material, PN, LOT_NO, ASE_NO, QTY, ExpDate, DOM, RT_NO):
 
 
 def spacedString(*args):
-    return bufferString(' ', *args)
+    return bufferString(u' ', *args)
 
 def zeroesString(*args):
-    return bufferString('0', *args)
+    return bufferString(u'0', *args)
 
-def bufferString(bufferChar = '', string = '', length = 0, postBuffer = False):
+def bufferString(bufferChar = u'', string = u'', length = 0, postBuffer = False):
     strLen = len(u'{}'.format(string))
     if postBuffer:
         return u'{}{}'.format(string, bufferChar * (length-strLen))
-    return u'{}{}'.format(bufferChar * (length-strLen), str(string))
+    return u'{}{}'.format(bufferChar * (length-strLen), unicode(string))
 
 def fix_codecs(s):
     if isinstance(s, unicode):
@@ -246,7 +246,7 @@ def printapp(noprint=False):
         print spacedString(sh['formID'], 7),
         print spacedString(sh['company'], 7),
         print spacedString(sh['lotID'], 10),
-        print zeroesString(sh['start'], 4) + '-' + zeroesString(sh['start']+sh['count'], 4),
+        print zeroesString(sh['start'], 4) + '-' + zeroesString(sh['start']+sh['count']-1, 4),
         print spacedString('({})'.format(i+1), 5),
         print spacedString(sh['count'], 3),
         print spacedString(sh['product'], 10, True)
@@ -256,7 +256,7 @@ def printapp(noprint=False):
 
 
     print 'PRODUCT:', doc[u"product"]
-    print 'PN:', doc[u"pn"]
+    print 'PN:', doc[u"pn"] if u'pn' in doc else u'NA'
     print doc[u"count"], "labels in this set."
     print ''
 
@@ -298,22 +298,22 @@ def printapp(noprint=False):
                 print doc[u"product"]
             except:
                 print "(can't print a Chinese character)"
-            print "PN:", doc[u"pn"]
+            print "PN:", doc[u"pn"] if u'pn' in doc else u'NA'
             print "LOT#:", doc[u"lotID"]
             print "ASE#:", ASE_NO
-            print "QTY:", doc[u"count"]
+            print "QTY:", doc[u"pkgQty"]
             print "EXP:", ExpDate
             print "DOM:", DOM
-            print "RT:", doc[u"rtCode"]
+            print "RT:", doc[u"rtCode"] if u'rtSeq' in doc else u'NA'
             print "PO:", doc[u"orderID"]
             print "---------------------"
             if not noprint:
                 if doc['barcode']:
-                    TM_label(doc[u"product"], doc[u"pn"], doc[u"lotID"], ASE_NO,
-                             doc[u"count"], ExpDate, DOM, doc[u"rtCode"], doc[u"orderID"])
+                    TM_label(doc[u"product"], doc[u"pn"] if u'pn' in doc else u'', doc[u"lotID"], ASE_NO,
+                             doc[u"pkgQty"], ExpDate, DOM, doc[u"rtCode"] if u'rtSeq' in doc else u'', doc[u"orderID"])
                 if doc['datamatrix']:
-                    TM_DMlabel(doc[u"product"], doc[u"pn"], doc[u"lotID"], ASE_NO,
-                             doc[u"count"], ExpDate, DOM, doc[u"rtCode"])
+                    TM_DMlabel(doc[u"product"], doc[u"pn"] if u'pn' in doc else u'', doc[u"lotID"], ASE_NO,
+                             doc[u"pkgQty"], ExpDate, DOM, doc[u"rtCode"] if u'rtSeq' in doc else u'')
         if noprint:
             raw_input("Finished. Press enter to close")
     raw_input("Hit enter to close")
